@@ -28,7 +28,6 @@ class LoginForm extends Model
 
     public static function loginList()
     {
-        /** @var \kilyakus\module\user\Module $module */
         $module = \Yii::$app->getModule('user');
 
         $userModel = $module->modelMap['User'];

@@ -4,7 +4,7 @@ namespace kilyakus\module\user\models;
 use kilyakus\module\user\Finder;
 use kilyakus\module\user\helpers\Password;
 use kilyakus\module\user\Mailer;
-use kilyakus\module\user\Module;
+use kilyakus\module\user\UserModule as Module;
 use kilyakus\module\user\traits\ModuleTrait;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;

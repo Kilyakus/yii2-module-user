@@ -2,7 +2,7 @@
 
 namespace kilyakus\module\user\traits;
 
-use kilyakus\module\user\Module;
+use kilyakus\module\user\UserModule as Module;
 
 /**
  * Trait ModuleTrait

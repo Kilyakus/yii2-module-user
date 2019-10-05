@@ -5,7 +5,7 @@ use kilyakus\module\user\Finder;
 use kilyakus\module\user\models\Account;
 use kilyakus\module\user\models\LoginForm;
 use kilyakus\module\user\models\User;
-use kilyakus\module\user\Module;
+use kilyakus\module\user\UserModule as Module;
 use kilyakus\module\user\traits\AjaxValidationTrait;
 use kilyakus\module\user\traits\EventTrait;
 use yii\authclient\AuthAction;

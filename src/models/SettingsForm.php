@@ -3,7 +3,7 @@ namespace kilyakus\module\user\models;
 
 use kilyakus\module\user\helpers\Password;
 use kilyakus\module\user\Mailer;
-use kilyakus\module\user\Module;
+use kilyakus\module\user\UserModule as Module;
 use kilyakus\module\user\traits\ModuleTrait;
 use Yii;
 use yii\base\Model;

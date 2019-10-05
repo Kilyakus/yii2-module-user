@@ -3,7 +3,7 @@
 
 use kilyakus\module\user\models\Token;
 use kilyakus\module\user\models\User;
-use kilyakus\module\user\Module;
+use kilyakus\module\user\UserModule as Module;
 use tests\_fixtures\UserFixture;
 use tests\_pages\LoginPage;
 use tests\_pages\RegistrationPage;
