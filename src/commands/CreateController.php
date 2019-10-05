@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\commands;
 
 use kilyakus\module\user\models\User;
@@ -16,24 +6,8 @@ use Yii;
 use yii\console\Controller;
 use yii\helpers\Console;
 
-/**
- * Creates new user account.
- *
- * @property \kilyakus\module\user\Module $module
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class CreateController extends Controller
 {
-    /**
-     * This command creates new user account. If password is not set, this command will generate new 8-char password.
-     * After saving user to database, this command uses mailer component to send credentials (username and password) to
-     * user via email.
-     *
-     * @param string      $email    Email address
-     * @param string      $username Username
-     * @param null|string $password Password (if null it will be generated automatically)
-     */
     public function actionIndex($email, $username, $password = null)
     {
         $user = Yii::createObject([

@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user;
 
 use kilyakus\module\user\models\Token;
@@ -16,43 +6,26 @@ use kilyakus\module\user\models\User;
 use Yii;
 use yii\base\Component;
 
-/**
- * Mailer.
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class Mailer extends Component
 {
-    /** @var string */
     public $viewPath = '@kilyakus/module/user/views/mail';
 
-    /** @var string|array Default: `Yii::$app->params['adminEmail']` OR `no-reply@example.com` */
     public $sender;
 
-    /** @var \yii\mail\BaseMailer Default: `Yii::$app->mailer` */
     public $mailerComponent;
 
-    /** @var string */
     protected $welcomeSubject;
 
-    /** @var string */
     protected $newPasswordSubject;
 
-    /** @var string */
     protected $confirmationSubject;
 
-    /** @var string */
     protected $reconfirmationSubject;
 
-    /** @var string */
     protected $recoverySubject;
 
-    /** @var \kilyakus\module\user\Module */
     protected $module;
 
-    /**
-     * @return string
-     */
     public function getWelcomeSubject()
     {
         if ($this->welcomeSubject == null) {
@@ -62,17 +35,11 @@ class Mailer extends Component
         return $this->welcomeSubject;
     }
 
-    /**
-     * @param string $welcomeSubject
-     */
     public function setWelcomeSubject($welcomeSubject)
     {
         $this->welcomeSubject = $welcomeSubject;
     }
 
-    /**
-     * @return string
-     */
     public function getNewPasswordSubject()
     {
         if ($this->newPasswordSubject == null) {
@@ -82,17 +49,11 @@ class Mailer extends Component
         return $this->newPasswordSubject;
     }
 
-    /**
-     * @param string $newPasswordSubject
-     */
     public function setNewPasswordSubject($newPasswordSubject)
     {
         $this->newPasswordSubject = $newPasswordSubject;
     }
 
-    /**
-     * @return string
-     */
     public function getConfirmationSubject()
     {
         if ($this->confirmationSubject == null) {
@@ -102,17 +63,11 @@ class Mailer extends Component
         return $this->confirmationSubject;
     }
 
-    /**
-     * @param string $confirmationSubject
-     */
     public function setConfirmationSubject($confirmationSubject)
     {
         $this->confirmationSubject = $confirmationSubject;
     }
 
-    /**
-     * @return string
-     */
     public function getReconfirmationSubject()
     {
         if ($this->reconfirmationSubject == null) {
@@ -122,17 +77,11 @@ class Mailer extends Component
         return $this->reconfirmationSubject;
     }
 
-    /**
-     * @param string $reconfirmationSubject
-     */
     public function setReconfirmationSubject($reconfirmationSubject)
     {
         $this->reconfirmationSubject = $reconfirmationSubject;
     }
 
-    /**
-     * @return string
-     */
     public function getRecoverySubject()
     {
         if ($this->recoverySubject == null) {
@@ -142,30 +91,17 @@ class Mailer extends Component
         return $this->recoverySubject;
     }
 
-    /**
-     * @param string $recoverySubject
-     */
     public function setRecoverySubject($recoverySubject)
     {
         $this->recoverySubject = $recoverySubject;
     }
 
-    /** @inheritdoc */
     public function init()
     {
         $this->module = Yii::$app->getModule('user');
         parent::init();
     }
 
-    /**
-     * Sends an email to a user after registration.
-     *
-     * @param User  $user
-     * @param Token $token
-     * @param bool  $showPassword
-     *
-     * @return bool
-     */
     public function sendWelcomeMessage(User $user, Token $token = null, $showPassword = false)
     {
         return $this->sendMessage(
@@ -176,14 +112,6 @@ class Mailer extends Component
         );
     }
 
-    /**
-     * Sends a new generated password to a user.
-     *
-     * @param User  $user
-     * @param Password $password
-     *
-     * @return bool
-     */
     public function sendGeneratedPassword(User $user, $password)
     {
         return $this->sendMessage(
@@ -194,14 +122,6 @@ class Mailer extends Component
         );
     }
 
-    /**
-     * Sends an email to a user with confirmation link.
-     *
-     * @param User  $user
-     * @param Token $token
-     *
-     * @return bool
-     */
     public function sendConfirmationMessage(User $user, Token $token)
     {
         return $this->sendMessage(
@@ -212,14 +132,6 @@ class Mailer extends Component
         );
     }
 
-    /**
-     * Sends an email to a user with reconfirmation link.
-     *
-     * @param User  $user
-     * @param Token $token
-     *
-     * @return bool
-     */
     public function sendReconfirmationMessage(User $user, Token $token)
     {
         if ($token->type == Token::TYPE_CONFIRM_NEW_EMAIL) {
@@ -236,14 +148,6 @@ class Mailer extends Component
         );
     }
 
-    /**
-     * Sends an email to a user with recovery link.
-     *
-     * @param User  $user
-     * @param Token $token
-     *
-     * @return bool
-     */
     public function sendRecoveryMessage(User $user, Token $token)
     {
         return $this->sendMessage(
@@ -254,14 +158,6 @@ class Mailer extends Component
         );
     }
 
-    /**
-     * @param string $to
-     * @param string $subject
-     * @param string $view
-     * @param array  $params
-     *
-     * @return bool
-     */
     protected function sendMessage($to, $subject, $view, $params = [])
     {
         $mailer = $this->mailerComponent === null ? Yii::$app->mailer : Yii::$app->get($this->mailerComponent);

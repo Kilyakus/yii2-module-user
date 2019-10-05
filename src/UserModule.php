@@ -1,25 +1,8 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user;
 
 use yii\base\Module as BaseModule;
 
-/**
- * This is the main module class for the Yii2-user.
- *
- * @property array $modelMap
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class UserModule extends BaseModule
 {
     const VERSION = '0.9.12';
@@ -89,7 +72,7 @@ class UserModule extends BaseModule
      *
      * @See [[GroupUrlRule::prefix]]
      */
-    public $urlPrefix = 'users';
+    public $urlPrefix = 'user';
 
     /**
      * @var bool Is the user module in DEBUG mode? Will be set to false automatically

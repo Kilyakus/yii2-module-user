@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user;
 
 use Yii;
@@ -17,12 +7,6 @@ use yii\base\BootstrapInterface;
 use yii\console\Application as ConsoleApplication;
 use yii\i18n\PhpMessageSource;
 
-/**
- * Bootstrap class registers module and user application component. It also creates some url rules which will be applied
- * when UrlManager.enablePrettyUrl is enabled.
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class Bootstrap implements BootstrapInterface
 {
     /** @var array Model's map */
@@ -42,12 +26,10 @@ class Bootstrap implements BootstrapInterface
     /** @inheritdoc */
     public function bootstrap($app)
     {
-        /** @var Module $module */
-        /** @var \yii\db\ActiveRecord $modelName */
         if ($app->hasModule('user') && ($module = $app->getModule('user')) instanceof Module) {
             $this->_modelMap = array_merge($this->_modelMap, $module->modelMap);
             foreach ($this->_modelMap as $name => $definition) {
-                $class = "dektrium\\user\\models\\" . $name;
+                $class = "kilyakus\\module\\user\\models\\" . $name;
                 Yii::$container->set($class, $definition);
                 $modelName = is_array($definition) ? $definition['class'] : $definition;
                 $module->modelMap[$name] = $modelName;
@@ -109,7 +91,6 @@ class Bootstrap implements BootstrapInterface
         }
     }
 
-    /** Ensure the module is not in DEBUG mode on production environments */
     public function ensureCorrectDebugSetting()
     {
         if (!defined('YII_DEBUG')) {
