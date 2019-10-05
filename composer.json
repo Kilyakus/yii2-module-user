@@ -38,7 +38,7 @@
         }
     },
     "extra": {
-        "bootstrap": "dektrium\\user\\Bootstrap",
+        "bootstrap": "kilyakus\\module\\user\\Bootstrap",
         "branch-alias": {
             "dev-master": "0.9.x-dev",
             "dev-develop": "1.0.x-dev"
