@@ -4,7 +4,7 @@ namespace kilyakus\module\user\models;
 use kilyakus\module\user\Finder;
 use kilyakus\module\user\helpers\Password;
 use kilyakus\module\user\Mailer;
-use kilyakus\module\user\UserModule as Module;
+use kilyakus\module\user\UserModule;
 use kilyakus\module\user\traits\ModuleTrait;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
@@ -289,7 +289,7 @@ class User extends ActiveRecord implements IdentityInterface
             if (empty($this->unconfirmed_email)) {
                 \Yii::$app->session->setFlash('danger', \Yii::t('user', 'An error occurred processing your request'));
             } elseif ($this->finder->findUser(['email' => $this->unconfirmed_email])->exists() == false) {
-                if ($this->module->emailChangeStrategy == Module::STRATEGY_SECURE) {
+                if ($this->module->emailChangeStrategy == UserModule::STRATEGY_SECURE) {
                     switch ($token->type) {
                         case Token::TYPE_CONFIRM_NEW_EMAIL:
                             $this->flags |= self::NEW_EMAIL_CONFIRMED;
@@ -313,7 +313,7 @@ class User extends ActiveRecord implements IdentityInterface
                             break;
                     }
                 }
-                if ($this->module->emailChangeStrategy == Module::STRATEGY_DEFAULT
+                if ($this->module->emailChangeStrategy == UserModule::STRATEGY_DEFAULT
                     || ($this->flags & self::NEW_EMAIL_CONFIRMED && $this->flags & self::OLD_EMAIL_CONFIRMED)) {
                     $this->email = $this->unconfirmed_email;
                     $this->unconfirmed_email = null;

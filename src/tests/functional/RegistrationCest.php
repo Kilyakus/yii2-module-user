@@ -3,7 +3,7 @@
 
 use kilyakus\module\user\models\Token;
 use kilyakus\module\user\models\User;
-use kilyakus\module\user\UserModule as Module;
+use kilyakus\module\user\UserModule;
 use tests\_fixtures\UserFixture;
 use tests\_pages\LoginPage;
 use tests\_pages\RegistrationPage;
@@ -18,7 +18,7 @@ class RegistrationCest
 
     public function _after(FunctionalTester $I)
     {
-        \Yii::$container->set(Module::className(), [
+        \Yii::$container->set(UserModule::className(), [
             'enableConfirmation'       => true,
             'enableGeneratingPassword' => false,
         ]);
@@ -30,7 +30,7 @@ class RegistrationCest
      */
     public function testRegistration(FunctionalTester $I)
     {
-        \Yii::$container->set(Module::className(), [
+        \Yii::$container->set(UserModule::className(), [
             'enableConfirmation'       => false,
             'enableGeneratingPassword' => false,
         ]);
@@ -66,7 +66,7 @@ class RegistrationCest
      */
     public function testRegistrationWithConfirmation(FunctionalTester $I)
     {
-        \Yii::$container->set(Module::className(), [
+        \Yii::$container->set(UserModule::className(), [
             'enableConfirmation' => true,
         ]);
         $page = RegistrationPage::openBy($I);
@@ -87,7 +87,7 @@ class RegistrationCest
      */
     public function testRegistrationWithoutPassword(FunctionalTester $I)
     {
-        \Yii::$container->set(Module::className(), [
+        \Yii::$container->set(UserModule::className(), [
             'enableConfirmation'       => false,
             'enableGeneratingPassword' => true,
         ]);

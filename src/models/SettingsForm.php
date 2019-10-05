@@ -3,7 +3,7 @@ namespace kilyakus\module\user\models;
 
 use kilyakus\module\user\helpers\Password;
 use kilyakus\module\user\Mailer;
-use kilyakus\module\user\UserModule as Module;
+use kilyakus\module\user\UserModule;
 use kilyakus\module\user\traits\ModuleTrait;
 use Yii;
 use yii\base\Model;
@@ -88,13 +88,13 @@ class SettingsForm extends Model
                 $this->user->unconfirmed_email = null;
             } elseif ($this->email != $this->user->email) {
                 switch ($this->module->emailChangeStrategy) {
-                    case Module::STRATEGY_INSECURE:
+                    case UserModule::STRATEGY_INSECURE:
                         $this->insecureEmailChange();
                         break;
-                    case Module::STRATEGY_DEFAULT:
+                    case UserModule::STRATEGY_DEFAULT:
                         $this->defaultEmailChange();
                         break;
-                    case Module::STRATEGY_SECURE:
+                    case UserModule::STRATEGY_SECURE:
                         $this->secureEmailChange();
                         break;
                     default:

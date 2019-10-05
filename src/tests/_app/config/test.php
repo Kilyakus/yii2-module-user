@@ -13,7 +13,7 @@ return [
     'bootstrap' => ['kilyakus\module\user\Bootstrap'],
     'modules' => [
         'user' => [
-            'class' => 'kilyakus\module\user\Module',
+            'class' => 'kilyakus\module\user\UserModule',
             'admins' => ['user'],
         ],
     ],
