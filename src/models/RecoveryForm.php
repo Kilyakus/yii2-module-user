@@ -1,55 +1,21 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\models;
 
 use kilyakus\module\user\Finder;
 use kilyakus\module\user\Mailer;
 use yii\base\Model;
 
-/**
- * Model for collecting data on password recovery.
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class RecoveryForm extends Model
 {
     const SCENARIO_REQUEST = 'request';
     const SCENARIO_RESET = 'reset';
 
-    /**
-     * @var string
-     */
     public $email;
-
-    /**
-     * @var string
-     */
     public $password;
 
-    /**
-     * @var Mailer
-     */
     protected $mailer;
-
-    /**
-     * @var Finder
-     */
     protected $finder;
 
-    /**
-     * @param Mailer $mailer
-     * @param Finder $finder
-     * @param array  $config
-     */
     public function __construct(Mailer $mailer, Finder $finder, $config = [])
     {
         $this->mailer = $mailer;
@@ -57,9 +23,6 @@ class RecoveryForm extends Model
         parent::__construct($config);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function attributeLabels()
     {
         return [
@@ -68,9 +31,6 @@ class RecoveryForm extends Model
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function scenarios()
     {
         return [
@@ -79,9 +39,6 @@ class RecoveryForm extends Model
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function rules()
     {
         return [
@@ -93,11 +50,6 @@ class RecoveryForm extends Model
         ];
     }
 
-    /**
-     * Sends recovery message.
-     *
-     * @return bool
-     */
     public function sendRecoveryMessage()
     {
         if (!$this->validate()) {
@@ -107,7 +59,7 @@ class RecoveryForm extends Model
         $user = $this->finder->findUserByEmail($this->email);
 
         if ($user instanceof User) {
-            /** @var Token $token */
+
             $token = \Yii::createObject([
                 'class' => Token::className(),
                 'user_id' => $user->id,
@@ -131,13 +83,6 @@ class RecoveryForm extends Model
         return true;
     }
 
-    /**
-     * Resets user's password.
-     *
-     * @param Token $token
-     *
-     * @return bool
-     */
     public function resetPassword(Token $token)
     {
         if (!$this->validate() || $token->user === null) {
@@ -157,9 +102,6 @@ class RecoveryForm extends Model
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function formName()
     {
         return 'recovery-form';

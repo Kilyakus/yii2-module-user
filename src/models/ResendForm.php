@@ -1,48 +1,17 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\models;
 
 use kilyakus\module\user\Finder;
 use kilyakus\module\user\Mailer;
 use yii\base\Model;
 
-/**
- * ResendForm gets user email address and if user with given email is registered it sends new confirmation message
- * to him in case he did not validate his email.
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class ResendForm extends Model
 {
-    /**
-     * @var string
-     */
     public $email;
 
-    /**
-     * @var Mailer
-     */
     protected $mailer;
-
-    /**
-     * @var Finder
-     */
     protected $finder;
 
-    /**
-     * @param Mailer $mailer
-     * @param Finder $finder
-     * @param array  $config
-     */
     public function __construct(Mailer $mailer, Finder $finder, $config = [])
     {
         $this->mailer = $mailer;
@@ -50,9 +19,6 @@ class ResendForm extends Model
         parent::__construct($config);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function rules()
     {
         return [
@@ -61,9 +27,6 @@ class ResendForm extends Model
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function attributeLabels()
     {
         return [
@@ -71,19 +34,11 @@ class ResendForm extends Model
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
     public function formName()
     {
         return 'resend-form';
     }
 
-    /**
-     * Creates new confirmation token and sends it to the user.
-     *
-     * @return bool
-     */
     public function resend()
     {
         if (!$this->validate()) {
@@ -93,7 +48,7 @@ class ResendForm extends Model
         $user = $this->finder->findUserByEmail($this->email);
 
         if ($user instanceof User && !$user->isConfirmed) {
-            /** @var Token $token */
+            
             $token = \Yii::createObject([
                 'class' => Token::className(),
                 'user_id' => $user->id,

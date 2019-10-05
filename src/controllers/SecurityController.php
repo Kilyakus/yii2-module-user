@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\controllers;
 
 use kilyakus\module\user\Finder;
@@ -26,83 +16,28 @@ use yii\helpers\Url;
 use yii\web\Controller;
 use yii\web\Response;
 
-/**
- * Controller that manages user authentication process.
- *
- * @property Module $module
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class SecurityController extends Controller
 {
     use AjaxValidationTrait;
     use EventTrait;
 
-    /**
-     * Event is triggered before logging user in.
-     * Triggered with \kilyakus\module\user\events\FormEvent.
-     */
     const EVENT_BEFORE_LOGIN = 'beforeLogin';
-
-    /**
-     * Event is triggered after logging user in.
-     * Triggered with \kilyakus\module\user\events\FormEvent.
-     */
     const EVENT_AFTER_LOGIN = 'afterLogin';
-
-    /**
-     * Event is triggered before logging user out.
-     * Triggered with \kilyakus\module\user\events\UserEvent.
-     */
     const EVENT_BEFORE_LOGOUT = 'beforeLogout';
-
-    /**
-     * Event is triggered after logging user out.
-     * Triggered with \kilyakus\module\user\events\UserEvent.
-     */
     const EVENT_AFTER_LOGOUT = 'afterLogout';
-
-    /**
-     * Event is triggered before authenticating user via social network.
-     * Triggered with \kilyakus\module\user\events\AuthEvent.
-     */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
-
-    /**
-     * Event is triggered after authenticating user via social network.
-     * Triggered with \kilyakus\module\user\events\AuthEvent.
-     */
     const EVENT_AFTER_AUTHENTICATE = 'afterAuthenticate';
-
-    /**
-     * Event is triggered before connecting social network account to user.
-     * Triggered with \kilyakus\module\user\events\AuthEvent.
-     */
     const EVENT_BEFORE_CONNECT = 'beforeConnect';
-
-    /**
-     * Event is triggered before connecting social network account to user.
-     * Triggered with \kilyakus\module\user\events\AuthEvent.
-     */
     const EVENT_AFTER_CONNECT = 'afterConnect';
 
-
-    /** @var Finder */
     protected $finder;
 
-    /**
-     * @param string $id
-     * @param Module $module
-     * @param Finder $finder
-     * @param array  $config
-     */
     public function __construct($id, $module, Finder $finder, $config = [])
     {
         $this->finder = $finder;
         parent::__construct($id, $module, $config);
     }
 
-    /** @inheritdoc */
     public function behaviors()
     {
         return [
@@ -122,14 +57,11 @@ class SecurityController extends Controller
         ];
     }
 
-    /** @inheritdoc */
     public function actions()
     {
         return [
             'auth' => [
                 'class' => AuthAction::className(),
-                // if user is not logged in, will try to log him in, otherwise
-                // will try to connect social account to user.
                 'successCallback' => \Yii::$app->user->isGuest
                     ? [$this, 'authenticate']
                     : [$this, 'connect'],
@@ -137,18 +69,12 @@ class SecurityController extends Controller
         ];
     }
 
-    /**
-     * Displays the login page.
-     *
-     * @return string|Response
-     */
     public function actionLogin()
     {
         if (!\Yii::$app->user->isGuest) {
             $this->goHome();
         }
 
-        /** @var LoginForm $model */
         $model = \Yii::createObject(LoginForm::className());
         $event = $this->getFormEvent($model);
 
@@ -167,11 +93,6 @@ class SecurityController extends Controller
         ]);
     }
 
-    /**
-     * Logs the user out and then redirects to the homepage.
-     *
-     * @return Response
-     */
     public function actionLogout()
     {
         $event = $this->getUserEvent(\Yii::$app->user->identity);
@@ -185,13 +106,6 @@ class SecurityController extends Controller
         return $this->goHome();
     }
 
-    /**
-     * Tries to authenticate user via social network. If user has already used
-     * this network's account, he will be logged in. Otherwise, it will try
-     * to create new user account.
-     *
-     * @param ClientInterface $client
-     */
     public function authenticate(ClientInterface $client)
     {
         $account = $this->finder->findAccount()->byClient($client)->one();
@@ -203,7 +117,6 @@ class SecurityController extends Controller
         }
 
         if ($account === null) {
-            /** @var Account $account */
             $accountObj = \Yii::createObject(Account::className());
             $account = $accountObj::create($client);
         }
@@ -228,14 +141,8 @@ class SecurityController extends Controller
         $this->trigger(self::EVENT_AFTER_AUTHENTICATE, $event);
     }
 
-    /**
-     * Tries to connect social account to user.
-     *
-     * @param ClientInterface $client
-     */
     public function connect(ClientInterface $client)
     {
-        /** @var Account $account */
         $account = \Yii::createObject(Account::className());
         $event   = $this->getAuthEvent($account, $client);
 

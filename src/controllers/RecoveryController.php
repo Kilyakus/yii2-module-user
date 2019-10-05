@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\controllers;
 
 use kilyakus\module\user\Finder;
@@ -20,70 +10,26 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 
-/**
- * RecoveryController manages password recovery process.
- *
- * @property \kilyakus\module\user\Module $module
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class RecoveryController extends Controller
 {
     use AjaxValidationTrait;
     use EventTrait;
 
-    /**
-     * Event is triggered before requesting password reset.
-     * Triggered with \kilyakus\module\user\events\FormEvent.
-     */
     const EVENT_BEFORE_REQUEST = 'beforeRequest';
-
-    /**
-     * Event is triggered after requesting password reset.
-     * Triggered with \kilyakus\module\user\events\FormEvent.
-     */
     const EVENT_AFTER_REQUEST = 'afterRequest';
-
-    /**
-     * Event is triggered before validating recovery token.
-     * Triggered with \kilyakus\module\user\events\ResetPasswordEvent. May not have $form property set.
-     */
     const EVENT_BEFORE_TOKEN_VALIDATE = 'beforeTokenValidate';
-
-    /**
-     * Event is triggered after validating recovery token.
-     * Triggered with \kilyakus\module\user\events\ResetPasswordEvent. May not have $form property set.
-     */
     const EVENT_AFTER_TOKEN_VALIDATE = 'afterTokenValidate';
-
-    /**
-     * Event is triggered before resetting password.
-     * Triggered with \kilyakus\module\user\events\ResetPasswordEvent.
-     */
     const EVENT_BEFORE_RESET = 'beforeReset';
-
-    /**
-     * Event is triggered after resetting password.
-     * Triggered with \kilyakus\module\user\events\ResetPasswordEvent.
-     */
     const EVENT_AFTER_RESET = 'afterReset';
 
-    /** @var Finder */
     protected $finder;
 
-    /**
-     * @param string           $id
-     * @param \yii\base\Module $module
-     * @param Finder           $finder
-     * @param array            $config
-     */
     public function __construct($id, $module, Finder $finder, $config = [])
     {
         $this->finder = $finder;
         parent::__construct($id, $module, $config);
     }
 
-    /** @inheritdoc */
     public function behaviors()
     {
         return [
@@ -96,19 +42,12 @@ class RecoveryController extends Controller
         ];
     }
 
-    /**
-     * Shows page where user can request password recovery.
-     *
-     * @return string
-     * @throws \yii\web\NotFoundHttpException
-     */
     public function actionRequest()
     {
         if (!$this->module->enablePasswordRecovery) {
             throw new NotFoundHttpException();
         }
 
-        /** @var RecoveryForm $model */
         $model = \Yii::createObject([
             'class'    => RecoveryForm::className(),
             'scenario' => RecoveryForm::SCENARIO_REQUEST,
@@ -131,22 +70,12 @@ class RecoveryController extends Controller
         ]);
     }
 
-    /**
-     * Displays page where user can reset password.
-     *
-     * @param int    $id
-     * @param string $code
-     *
-     * @return string
-     * @throws \yii\web\NotFoundHttpException
-     */
     public function actionReset($id, $code)
     {
         if (!$this->module->enablePasswordRecovery) {
             throw new NotFoundHttpException();
         }
 
-        /** @var Token $token */
         $token = $this->finder->findToken(['user_id' => $id, 'code' => $code, 'type' => Token::TYPE_RECOVERY])->one();
         if (empty($token) || ! $token instanceof Token) {
             throw new NotFoundHttpException();
@@ -167,7 +96,6 @@ class RecoveryController extends Controller
             ]);
         }
 
-        /** @var RecoveryForm $model */
         $model = \Yii::createObject([
             'class'    => RecoveryForm::className(),
             'scenario' => RecoveryForm::SCENARIO_RESET,

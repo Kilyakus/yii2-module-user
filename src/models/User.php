@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\models;
 
 use kilyakus\module\user\Finder;
@@ -23,40 +13,6 @@ use yii\web\Application as WebApplication;
 use yii\web\IdentityInterface;
 use yii\helpers\ArrayHelper;
 
-
-/**
- * User ActiveRecord model.
- *
- * @property bool    $isAdmin
- * @property bool    $isBlocked
- * @property bool    $isConfirmed
- *
- * Database fields:
- * @property integer $id
- * @property string  $username
- * @property string  $email
- * @property string  $unconfirmed_email
- * @property string  $password_hash
- * @property string  $auth_key
- * @property string  $registration_ip
- * @property integer $confirmed_at
- * @property integer $blocked_at
- * @property integer $created_at
- * @property integer $updated_at
- * @property integer $last_login_at
- * @property integer $flags
- *
- * Defined relations:
- * @property Account[] $accounts
- * @property Profile   $profile
- *
- * Dependencies:
- * @property-read Finder $finder
- * @property-read Module $module
- * @property-read Mailer $mailer
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class User extends ActiveRecord implements IdentityInterface
 {
     use ModuleTrait;
@@ -68,56 +24,35 @@ class User extends ActiveRecord implements IdentityInterface
     const BEFORE_CONFIRM  = 'beforeConfirm';
     const AFTER_CONFIRM   = 'afterConfirm';
 
-    // following constants are used on secured email changing process
     const OLD_EMAIL_CONFIRMED = 0b1;
     const NEW_EMAIL_CONFIRMED = 0b10;
 
-    /** @var string Plain password. Used for model validation. */
     public $password;
 
-    /** @var Profile|null */
     private $_profile;
 
-    /** @var string Default username regexp */
     public static $usernameRegexp = '/^[-a-zA-Z0-9_\.@]+$/';
 
-    /**
-     * @return Finder
-     * @throws \yii\base\InvalidConfigException
-     */
     protected function getFinder()
     {
         return \Yii::$container->get(Finder::className());
     }
 
-    /**
-     * @return Mailer
-     * @throws \yii\base\InvalidConfigException
-     */
     protected function getMailer()
     {
         return \Yii::$container->get(Mailer::className());
     }
 
-    /**
-     * @return bool Whether the user is confirmed or not.
-     */
     public function getIsConfirmed()
     {
         return $this->confirmed_at != null;
     }
 
-    /**
-     * @return bool Whether the user is blocked or not.
-     */
     public function getIsBlocked()
     {
         return $this->blocked_at != null;
     }
 
-    /**
-     * @return bool Whether the user is an admin or not.
-     */
     public function getIsAdmin()
     {
         return
@@ -126,9 +61,6 @@ class User extends ActiveRecord implements IdentityInterface
             || in_array($this->username, $this->module->admins);
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
     public function getProfile()
     {
         return $this->hasOne($this->module->modelMap['Profile'], ['user_id' => 'id']);
@@ -150,7 +82,6 @@ class User extends ActiveRecord implements IdentityInterface
         $connected = [];
         $accounts  = $this->hasMany($this->module->modelMap['Account'], ['user_id' => 'id'])->all();
 
-        /** @var Account $account */
         foreach ($accounts as $account) {
             $connected[$account->provider] = $account;
         }
@@ -158,11 +89,6 @@ class User extends ActiveRecord implements IdentityInterface
         return $connected;
     }
 
-    /**
-     * Returns connected account by provider.
-     * @param  string $provider
-     * @return Account|null
-     */
     public function getAccountByProvider($provider)
     {
         $accounts = $this->getAccounts();
@@ -171,23 +97,21 @@ class User extends ActiveRecord implements IdentityInterface
             : null;
     }
 
-    /** @inheritdoc */
     public function getId()
     {
         return $this->getAttribute('id');
     }
 
-    /** @inheritdoc */
     public function getAuthKey()
     {
         return $this->getAttribute('auth_key');
     }
 
-    /** @inheritdoc */
     public function attributeLabels()
     {
         return [
             'username'          => \Yii::t('user', 'Username'),
+            'name'              => \Yii::t('user', 'Name'),
             'email'             => \Yii::t('user', 'Email'),
             'registration_ip'   => \Yii::t('user', 'Registration ip'),
             'unconfirmed_email' => \Yii::t('user', 'New email'),
@@ -198,7 +122,6 @@ class User extends ActiveRecord implements IdentityInterface
         ];
     }
 
-    /** @inheritdoc */
     public function behaviors()
     {
         return [
@@ -206,7 +129,6 @@ class User extends ActiveRecord implements IdentityInterface
         ];
     }
 
-    /** @inheritdoc */
     public function scenarios()
     {
         $scenarios = parent::scenarios();
@@ -219,11 +141,9 @@ class User extends ActiveRecord implements IdentityInterface
         ]);
     }
 
-    /** @inheritdoc */
     public function rules()
     {
         return [
-            // username rules
             'usernameTrim'     => ['username', 'trim'],
             'usernameRequired' => ['username', 'required', 'on' => ['register', 'create', 'connect', 'update']],
             'usernameMatch'    => ['username', 'match', 'pattern' => static::$usernameRegexp],
@@ -234,7 +154,6 @@ class User extends ActiveRecord implements IdentityInterface
                 'message' => \Yii::t('user', 'This username has already been taken')
             ],
 
-            // email rules
             'emailTrim'     => ['email', 'trim'],
             'emailRequired' => ['email', 'required', 'on' => ['register', 'connect', 'create', 'update']],
             'emailPattern'  => ['email', 'email'],
@@ -245,24 +164,16 @@ class User extends ActiveRecord implements IdentityInterface
                 'message' => \Yii::t('user', 'This email address has already been taken')
             ],
 
-            // password rules
             'passwordRequired' => ['password', 'required', 'on' => ['register']],
             'passwordLength'   => ['password', 'string', 'min' => 6, 'max' => 72, 'on' => ['register', 'create']],
         ];
     }
 
-    /** @inheritdoc */
     public function validateAuthKey($authKey)
     {
         return $this->getAttribute('auth_key') === $authKey;
     }
 
-    /**
-     * Creates new user account. If Module::enableGeneratingPassword is set true, this method
-     * will generate password.
-     *
-     * @return bool
-     */
     public function create()
     {
         if ($this->getIsNewRecord() == false) {
@@ -296,12 +207,6 @@ class User extends ActiveRecord implements IdentityInterface
         }
     }
 
-    /**
-     * This method is used to register new user account. If Module::enableConfirmation is set true, this method
-     * will generate new confirmation token and use mailer to send it to the user.
-     *
-     * @return bool
-     */
     public function register()
     {
         if ($this->getIsNewRecord() == false) {
@@ -322,7 +227,6 @@ class User extends ActiveRecord implements IdentityInterface
             }
 
             if ($this->module->enableConfirmation) {
-                /** @var Token $token */
                 $token = \Yii::createObject(['class' => Token::className(), 'type' => Token::TYPE_CONFIRMATION]);
                 $token->link('user', $this);
             }
@@ -340,13 +244,6 @@ class User extends ActiveRecord implements IdentityInterface
         }
     }
 
-    /**
-     * Attempts user confirmation.
-     *
-     * @param string $code Confirmation code.
-     *
-     * @return boolean
-     */
     public function attemptConfirmation($code)
     {
         $token = $this->finder->findTokenByParams($this->id, $code, Token::TYPE_CONFIRMATION);
@@ -369,13 +266,6 @@ class User extends ActiveRecord implements IdentityInterface
         return $success;
     }
 
-    /**
-     * Generates a new password and sends it to the user.
-     *
-     * @param string $code Confirmation code.
-     *
-     * @return boolean
-     */
     public function resendPassword()
     {
         $this->password = Password::generate(8);
@@ -384,21 +274,8 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->mailer->sendGeneratedPassword($this, $this->password);
     }
 
-    /**
-     * This method attempts changing user email. If user's "unconfirmed_email" field is empty is returns false, else if
-     * somebody already has email that equals user's "unconfirmed_email" it returns false, otherwise returns true and
-     * updates user's password.
-     *
-     * @param string $code
-     *
-     * @return bool
-     * @throws \Exception
-     */
     public function attemptEmailChange($code)
     {
-        // TODO refactor method
-
-        /** @var Token $token */
         $token = $this->finder->findToken([
             'user_id' => $this->id,
             'code'    => $code,
@@ -447,9 +324,6 @@ class User extends ActiveRecord implements IdentityInterface
         }
     }
 
-    /**
-     * Confirms the user by setting 'confirmed_at' field to current time.
-     */
     public function confirm()
     {
         $this->trigger(self::BEFORE_CONFIRM);
@@ -458,21 +332,11 @@ class User extends ActiveRecord implements IdentityInterface
         return $result;
     }
 
-    /**
-     * Resets password.
-     *
-     * @param string $password
-     *
-     * @return bool
-     */
     public function resetPassword($password)
     {
         return (bool)$this->updateAttributes(['password_hash' => Password::hash($password)]);
     }
 
-    /**
-     * Blocks the user by setting 'blocked_at' field to current time and regenerates auth_key.
-     */
     public function block()
     {
         return (bool)$this->updateAttributes([
@@ -481,29 +345,19 @@ class User extends ActiveRecord implements IdentityInterface
         ]);
     }
 
-    /**
-     * UnBlocks the user by setting 'blocked_at' field to null.
-     */
     public function unblock()
     {
         return (bool)$this->updateAttributes(['blocked_at' => null]);
     }
 
-    /**
-     * Generates new username based on email address, or creates new username
-     * like "emailuser1".
-     */
     public function generateUsername()
     {
-        // try to use name part of email
         $username = explode('@', $this->email)[0];
         $this->username = $username;
         if ($this->validate(['username'])) {
             return $this->username;
         }
 
-        // valid email addresses are less restricitve than our
-        // valid username regexp so fallback to 'user123' if needed:
         if (!preg_match(self::$usernameRegexp, $username)) {
             $username = 'user';
         }
@@ -511,7 +365,6 @@ class User extends ActiveRecord implements IdentityInterface
 
         $max = $this->finder->userQuery->max('id');
 
-        // generate username like "user1", "user2", etc...
         do {
             $this->username = $username . ++$max;
         } while (!$this->validate(['username']));
@@ -519,7 +372,6 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->username;
     }
 
-    /** @inheritdoc */
     public function beforeSave($insert)
     {
         if ($insert) {
@@ -536,7 +388,6 @@ class User extends ActiveRecord implements IdentityInterface
         return parent::beforeSave($insert);
     }
 
-    /** @inheritdoc */
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
@@ -548,19 +399,16 @@ class User extends ActiveRecord implements IdentityInterface
         }
     }
 
-    /** @inheritdoc */
     public static function tableName()
     {
         return '{{%user}}';
     }
 
-    /** @inheritdoc */
     public static function findIdentity($id)
     {
         return static::findOne($id);
     }
 
-    /** @inheritdoc */
     public static function findIdentityByAccessToken($token, $type = null)
     {
         throw new NotSupportedException('Method "' . __CLASS__ . '::' . __METHOD__ . '" is not implemented.');

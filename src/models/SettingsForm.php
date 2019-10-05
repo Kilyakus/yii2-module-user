@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\models;
 
 use kilyakus\module\user\helpers\Password;
@@ -18,36 +8,19 @@ use kilyakus\module\user\traits\ModuleTrait;
 use Yii;
 use yii\base\Model;
 
-/**
- * SettingsForm gets user's username, email and password and changes them.
- *
- * @property User $user
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class SettingsForm extends Model
 {
     use ModuleTrait;
 
-    /** @var string */
     public $email;
-
-    /** @var string */
     public $username;
-
-    /** @var string */
     public $new_password;
-
-    /** @var string */
     public $current_password;
 
-    /** @var Mailer */
     protected $mailer;
 
-    /** @var User */
     private $_user;
 
-    /** @return User */
     public function getUser()
     {
         if ($this->_user == null) {
@@ -57,7 +30,6 @@ class SettingsForm extends Model
         return $this->_user;
     }
 
-    /** @inheritdoc */
     public function __construct(Mailer $mailer, $config = [])
     {
         $this->mailer = $mailer;
@@ -68,7 +40,6 @@ class SettingsForm extends Model
         parent::__construct($config);
     }
 
-    /** @inheritdoc */
     public function rules()
     {
         return [
@@ -92,7 +63,6 @@ class SettingsForm extends Model
         ];
     }
 
-    /** @inheritdoc */
     public function attributeLabels()
     {
         return [
@@ -103,17 +73,11 @@ class SettingsForm extends Model
         ];
     }
 
-    /** @inheritdoc */
     public function formName()
     {
         return 'settings-form';
     }
 
-    /**
-     * Saves new account settings.
-     *
-     * @return bool
-     */
     public function save()
     {
         if ($this->validate()) {
@@ -144,18 +108,12 @@ class SettingsForm extends Model
         return false;
     }
 
-    /**
-     * Changes user's email address to given without any confirmation.
-     */
     protected function insecureEmailChange()
     {
         $this->user->email = $this->email;
         Yii::$app->session->setFlash('success', Yii::t('user', 'Your email address has been changed'));
     }
 
-    /**
-     * Sends a confirmation message to user's email address with link to confirm changing of email.
-     */
     protected function defaultEmailChange()
     {
         $this->user->unconfirmed_email = $this->email;
@@ -173,15 +131,10 @@ class SettingsForm extends Model
         );
     }
 
-    /**
-     * Sends a confirmation message to both old and new email addresses with link to confirm changing of email.
-     *
-     * @throws \yii\base\InvalidConfigException
-     */
     protected function secureEmailChange()
     {
         $this->defaultEmailChange();
-        /** @var Token $token */
+
         $token = Yii::createObject([
             'class'   => Token::className(),
             'user_id' => $this->user->id,
@@ -190,7 +143,6 @@ class SettingsForm extends Model
         $token->save(false);
         $this->mailer->sendReconfirmationMessage($this->user, $token);
 
-        // unset flags if they exist
         $this->user->flags &= ~User::NEW_EMAIL_CONFIRMED;
         $this->user->flags &= ~User::OLD_EMAIL_CONFIRMED;
         $this->user->save(false);

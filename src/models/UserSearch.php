@@ -1,14 +1,4 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\models;
 
 use kilyakus\module\user\Finder;
@@ -16,58 +6,39 @@ use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 
-/**
- * UserSearch represents the model behind the search form about User.
- */
 class UserSearch extends Model
 {
-    /** @var integer */
     public $id;
-
-    /** @var string */
     public $username;
-
-    /** @var string */
+    public $name;
     public $email;
-
-    /** @var int */
     public $created_at;
-
-    /** @var int */
     public $last_login_at;
-
-    /** @var string */
     public $registration_ip;
 
-    /** @var Finder */
     protected $finder;
 
-    /**
-     * @param Finder $finder
-     * @param array  $config
-     */
     public function __construct(Finder $finder, $config = [])
     {
         $this->finder = $finder;
         parent::__construct($config);
     }
 
-    /** @inheritdoc */
     public function rules()
     {
         return [
-            'fieldsSafe' => [['id', 'username', 'email', 'registration_ip', 'created_at', 'last_login_at'], 'safe'],
+            'fieldsSafe' => [['id', 'username', 'name', 'email', 'registration_ip', 'created_at', 'last_login_at'], 'safe'],
             'createdDefault' => ['created_at', 'default', 'value' => null],
             'lastloginDefault' => ['last_login_at', 'default', 'value' => null],
         ];
     }
 
-    /** @inheritdoc */
     public function attributeLabels()
     {
         return [
             'id'              => Yii::t('user', '#'),
             'username'        => Yii::t('user', 'Username'),
+            'name'        => Yii::t('user', 'Name'),
             'email'           => Yii::t('user', 'Email'),
             'created_at'      => Yii::t('user', 'Registration time'),
             'last_login_at'   => Yii::t('user', 'Last login'),
@@ -75,11 +46,6 @@ class UserSearch extends Model
         ];
     }
 
-    /**
-     * @param $params
-     *
-     * @return ActiveDataProvider
-     */
     public function search($params)
     {
         $query = $this->finder->getUserQuery();
