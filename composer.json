@@ -34,7 +34,7 @@
     },
     "autoload": {
         "psr-4": {
-            "kilyakus\\module\\user\\": ""
+            "kilyakus\\module\\user\\": "src"
         }
     },
     "extra": {
