@@ -1,29 +1,8 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium/>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace kilyakus\module\user\helpers;
 
-/**
- * Timezone helper.
- *
- * @author Dmitry Erofeev <dmeroff@gmail.com>
- */
 class Timezone
 {
-
-    /**
-     * Get all of the time zones with the offsets sorted by their offset
-     *
-     * @return array
-     */
     public static function getAll()
     {
         $timeZones = [];
