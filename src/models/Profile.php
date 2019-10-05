@@ -1,7 +1,10 @@
 <?php
 namespace kilyakus\module\user\models;
 
+use Yii;
 use kilyakus\module\user\traits\ModuleTrait;
+use kilyakus\imageprocessor\Avatar;
+use kilyakus\imageprocessor\Image;
 use yii\db\ActiveRecord;
 
 class Profile extends ActiveRecord
@@ -15,9 +18,26 @@ class Profile extends ActiveRecord
         $this->module = \Yii::$app->getModule('user');
     }
 
-    public function getAvatarUrl($size = 200)
+    public function getAvatar($x = 300, $y = null)
     {
-        return '//gravatar.com/avatar/' . $this->gravatar_id . '?s=' . $size;
+        if(!$y){
+            $y = $x;
+        }
+        $avatar = isset($this->avatar) ? $this->avatar : $this->getAvatarUrl();
+        $avatar = Image::thumb($avatar, $x, $y);
+        return $avatar;
+    }
+
+    public function getAvatarUrl($size = 300)
+    {
+        $gravatar = Yii::getAlias('@webroot') . '/uploads/avatars/gravatar_'.$this->gravatar_id.'.jpg';
+
+        if(empty($this->avatar) && $this->gravatar_id && is_file($gravatar)){
+            $avatar = $gravatar;
+        }else{
+            $avatar = Avatar::get($this->avatar,$this->user->name ? $this->user->name : $this->user->username);
+        }
+        return $avatar;
     }
 
     public function getUser()

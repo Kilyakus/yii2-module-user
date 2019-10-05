@@ -17,7 +17,7 @@ use kilyakus\module\user\models\Profile;
 use kilyakus\module\user\models\User;
 use kilyakus\module\user\models\UserSearch;
 use kilyakus\module\user\helpers\Password;
-use kilyakus\module\user\Module;
+use kilyakus\module\user\UserModule as Module;
 use kilyakus\module\user\traits\EventTrait;
 use yii;
 use yii\base\ExitException;
