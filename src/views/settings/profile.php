@@ -1,24 +1,8 @@
 <?php
-
-/*
- * This file is part of the Dektrium project.
- *
- * (c) Dektrium project <http://github.com/dektrium>
- *
- * For the full copyright and license information, please view the LICENSE.md
- * file that was distributed with this source code.
- */
-
 use yii\helpers\Html;
 use kilyakus\module\user\helpers\Timezone;
 use yii\widgets\ActiveForm;
 use yii\helpers\ArrayHelper;
-
-/**
- * @var yii\web\View $this
- * @var yii\widgets\ActiveForm $form
- * @var kilyakus\module\user\models\Profile $model
- */
 
 $this->title = Yii::t('user', 'Profile settings');
 $this->params['breadcrumbs'][] = $this->title;
