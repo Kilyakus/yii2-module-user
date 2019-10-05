@@ -1,6 +1,7 @@
 <?php
 namespace kilyakus\module\user\models;
 
+use Yii;
 use kilyakus\module\user\clients\ClientInterface;
 use kilyakus\module\user\Finder;
 use kilyakus\module\user\models\query\AccountQuery;
@@ -82,7 +83,9 @@ class Account extends ActiveRecord
         }
 
         if (($user = static::fetchUser($account)) instanceof User) {
+
             $account->user_id = $user->id;
+            
         }
 
         $account->save(false);

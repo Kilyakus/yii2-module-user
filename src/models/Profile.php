@@ -2,10 +2,12 @@
 namespace kilyakus\module\user\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 use kilyakus\module\user\traits\ModuleTrait;
 use kilyakus\imageprocessor\Avatar;
 use kilyakus\imageprocessor\Image;
-use yii\db\ActiveRecord;
+use kilyakus\cutter\behaviors\CutterBehavior;
+
 
 class Profile extends ActiveRecord
 {
@@ -49,28 +51,56 @@ class Profile extends ActiveRecord
     {
         return [
             'bioString'            => ['bio', 'string'],
+            'phoneString'          => ['phone', 'string'],
+            'signatureString'      => ['signature', 'string'],
             'timeZoneValidation'   => ['timezone', 'validateTimeZone'],
             'publicEmailPattern'   => ['public_email', 'email'],
             'gravatarEmailPattern' => ['gravatar_email', 'email'],
             'websiteUrl'           => ['website', 'url'],
-            'nameLength'           => ['name', 'string', 'max' => 255],
+            // 'nameLength'           => ['name', 'string', 'max' => 255],
             'publicEmailLength'    => ['public_email', 'string', 'max' => 255],
             'gravatarEmailLength'  => ['gravatar_email', 'string', 'max' => 255],
             'locationLength'       => ['location', 'string', 'max' => 255],
             'websiteLength'        => ['website', 'string', 'max' => 255],
+            'avatarImage'          => ['avatar', 'image'],
+            ['birthdate', 'default', 'value'=> time()],
+            ['interests', 'default', 'value' => null],
+            [['anonymous','gender','spouse'],'integer'],
+            [['name','second_name','generic_name','body_height','body_weight'], 'string', 'max' => 255],
         ];
     }
 
     public function attributeLabels()
     {
         return [
-            'name'           => \Yii::t('user', 'Name'),
             'public_email'   => \Yii::t('user', 'Email (public)'),
             'gravatar_email' => \Yii::t('user', 'Gravatar email'),
+            'avatar'         => \Yii::t('user', 'User avatar'),
             'location'       => \Yii::t('user', 'Location'),
             'website'        => \Yii::t('user', 'Website'),
             'bio'            => \Yii::t('user', 'Bio'),
             'timezone'       => \Yii::t('user', 'Time zone'),
+            'birthdate'      => \Yii::t('user', 'Date of birth'),
+            'name'           => \Yii::t('user', 'Name'),
+            'second_name'    => \Yii::t('user', 'Second name'),
+            'generic_name'   => \Yii::t('user', 'Generic name'),
+            'phone'          => \Yii::t('user', 'Phone number'),
+            'interests'      => \Yii::t('user', 'Interests'),
+            'messengers'     => \Yii::t('user', 'Messengers'),
+            'body_height'    => \Yii::t('easyii', 'Body height'),
+            'body_weight'    => \Yii::t('easyii', 'Body weight'),
+        ];
+    }
+
+    public function behaviors()
+    {
+        return [
+            'avatar' => [
+                'class' => CutterBehavior::className(),
+                'attributes' => 'avatar',
+                'baseDir' => '/uploads/avatars',
+                'basePath' => '@webroot/uploads/avatars',
+            ],
         ];
     }
 
@@ -111,6 +141,15 @@ class Profile extends ActiveRecord
         }
 
         return parent::beforeSave($insert);
+    }
+
+    public function afterDelete()
+    {
+        parent::afterDelete();
+
+        if($this->avatar) {
+            @unlink(Yii::getAlias('@webroot') . $this->avatar);
+        }
     }
 
     public static function tableName()
