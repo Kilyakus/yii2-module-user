@@ -1,16 +1,23 @@
 <?php
+
+/*
+ * This file is part of the Dektrium project.
+ *
+ * (c) Dektrium project <http://github.com/dektrium/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace kilyakus\module\user\controllers;
 
-use Yii;
-use dektrium\user\Finder;
+use kilyakus\module\user\Finder;
 use kilyakus\module\user\models\Account;
 use kilyakus\module\user\models\LoginForm;
 use kilyakus\module\user\models\User;
-use kilyakus\module\user\models\Profile;
 use kilyakus\module\user\Module;
 use kilyakus\module\user\traits\AjaxValidationTrait;
 use kilyakus\module\user\traits\EventTrait;
-use kilyakus\module\user\filters\AccessRule;
 use yii\authclient\AuthAction;
 use yii\authclient\ClientInterface;
 use yii\filters\AccessControl;
@@ -19,54 +26,103 @@ use yii\helpers\Url;
 use yii\web\Controller;
 use yii\web\Response;
 
-class SecurityController extends \bin\admin\components\AppController
+/**
+ * Controller that manages user authentication process.
+ *
+ * @property Module $module
+ *
+ * @author Dmitry Erofeev <dmeroff@gmail.com>
+ */
+class SecurityController extends Controller
 {
     use AjaxValidationTrait;
     use EventTrait;
 
+    /**
+     * Event is triggered before logging user in.
+     * Triggered with \kilyakus\module\user\events\FormEvent.
+     */
     const EVENT_BEFORE_LOGIN = 'beforeLogin';
+
+    /**
+     * Event is triggered after logging user in.
+     * Triggered with \kilyakus\module\user\events\FormEvent.
+     */
     const EVENT_AFTER_LOGIN = 'afterLogin';
+
+    /**
+     * Event is triggered before logging user out.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_LOGOUT = 'beforeLogout';
+
+    /**
+     * Event is triggered after logging user out.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_LOGOUT = 'afterLogout';
+
+    /**
+     * Event is triggered before authenticating user via social network.
+     * Triggered with \kilyakus\module\user\events\AuthEvent.
+     */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
+
+    /**
+     * Event is triggered after authenticating user via social network.
+     * Triggered with \kilyakus\module\user\events\AuthEvent.
+     */
     const EVENT_AFTER_AUTHENTICATE = 'afterAuthenticate';
+
+    /**
+     * Event is triggered before connecting social network account to user.
+     * Triggered with \kilyakus\module\user\events\AuthEvent.
+     */
     const EVENT_BEFORE_CONNECT = 'beforeConnect';
+
+    /**
+     * Event is triggered before connecting social network account to user.
+     * Triggered with \kilyakus\module\user\events\AuthEvent.
+     */
     const EVENT_AFTER_CONNECT = 'afterConnect';
 
+
+    /** @var Finder */
     protected $finder;
 
+    /**
+     * @param string $id
+     * @param Module $module
+     * @param Finder $finder
+     * @param array  $config
+     */
     public function __construct($id, $module, Finder $finder, $config = [])
     {
         $this->finder = $finder;
         parent::__construct($id, $module, $config);
     }
 
-    public $enableCsrfValidation = false;
-
+    /** @inheritdoc */
     public function behaviors()
     {
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'ruleConfig' => [
-                    'class' => AccessRule::className(),
-                ],
                 'rules' => [
-                    ['allow' => true, 'actions' => ['login', 'auth','networks'], 'roles' => ['?']],
-                    ['allow' => true, 'actions' => ['login', 'auth','networks', 'logout'], 'roles' => ['@']],
+                    ['allow' => true, 'actions' => ['login', 'auth'], 'roles' => ['?']],
+                    ['allow' => true, 'actions' => ['login', 'auth', 'logout'], 'roles' => ['@']],
                 ],
             ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
                     'logout' => ['post'],
-                    'networks' => ['post'],
                 ],
             ],
-
         ];
     }
 
+    /** @inheritdoc */
     public function actions()
     {
         return [
@@ -74,29 +130,35 @@ class SecurityController extends \bin\admin\components\AppController
                 'class' => AuthAction::className(),
                 // if user is not logged in, will try to log him in, otherwise
                 // will try to connect social account to user.
-                'successCallback' => Yii::$app->user->isGuest
+                'successCallback' => \Yii::$app->user->isGuest
                     ? [$this, 'authenticate']
                     : [$this, 'connect'],
             ],
         ];
     }
 
+    /**
+     * Displays the login page.
+     *
+     * @return string|Response
+     */
     public function actionLogin()
     {
-        if (!Yii::$app->user->isGuest) {
+        if (!\Yii::$app->user->isGuest) {
             $this->goHome();
         }
 
-        $model = Yii::createObject(LoginForm::className());
+        /** @var LoginForm $model */
+        $model = \Yii::createObject(LoginForm::className());
         $event = $this->getFormEvent($model);
 
-        $this->sendAjaxValidation($model);
+        $this->performAjaxValidation($model);
 
         $this->trigger(self::EVENT_BEFORE_LOGIN, $event);
 
-        if ($model->load(Yii::$app->getRequest()->post()) && $model->login()) {
+        if ($model->load(\Yii::$app->getRequest()->post()) && $model->login()) {
             $this->trigger(self::EVENT_AFTER_LOGIN, $event);
-            return $this->redirect((Yii::$app->user->returnUrl && Yii::$app->user->returnUrl != '/') ? Yii::$app->user->returnUrl : Yii::$app->request->referrer);
+            return $this->goBack();
         }
 
         return $this->render('login', [
@@ -105,81 +167,44 @@ class SecurityController extends \bin\admin\components\AppController
         ]);
     }
 
+    /**
+     * Logs the user out and then redirects to the homepage.
+     *
+     * @return Response
+     */
     public function actionLogout()
     {
-        $event = $this->getUserEvent(Yii::$app->user->identity);
+        $event = $this->getUserEvent(\Yii::$app->user->identity);
 
         $this->trigger(self::EVENT_BEFORE_LOGOUT, $event);
 
-        Yii::$app->getUser()->logout();
+        \Yii::$app->getUser()->logout();
 
         $this->trigger(self::EVENT_AFTER_LOGOUT, $event);
 
         return $this->goHome();
     }
 
-    public function actionNetworks()
-    {
-        $response = json_decode(file_get_contents('http://ulogin.ru/token.php?token=' . $_POST['token'] . '&host=' . $_SERVER['HTTP_HOST']), true);
-
-        if(Yii::$app->user->isGuest){
-            $identityUser = User::find()->where(['email' => $response['email']])->one();
-            $identityAccount = User::findOne(Account::find()->where(['client_id' => $response['uid']])->one()->user_id);
-        }else{
-            $identityUser = User::findOne(\Yii::$app->user->getId());
-            $identityAccount = User::findOne(Account::find()->where(['client_id' => $response['uid']])->one()->user_id);
-        }
-
-        if($identityAccount){
-
-            Yii::$app->user->login($identityAccount);
-
-        }else{
-
-            if(!$identityUser){
-                $user = new User();
-                $user->username = $response['email'];
-                $user->email = $response['email'];
-                $user->password = $response['uid'];
-                $user->save(false);
-
-                $profile = Profile::find()->where(['user_id' => $user->id])->one();
-                $profile->name = $response['first_name'];
-                $profile->gravatar_email = $response['email'];
-                $profile->save(false);
-
-                $currentUser = $user->id;
-            }
-
-            $currentUser =  $user->id ? $user->id : $identityUser->id;
-
-            $account = new Account();
-            $account->user_id = $currentUser;
-            $account->provider = $response['network'];
-            $account->client_id = $response['uid'];
-            $account->email = $response['email'];
-            $account->save(false);
-
-            $identityAccount = User::find()->where(['id'=>$currentUser])->one();
-            Yii::$app->user->login($identityAccount);
-        }
-
-        return $this->redirect(Yii::$app->request->referrer);
-        
-    }
-
+    /**
+     * Tries to authenticate user via social network. If user has already used
+     * this network's account, he will be logged in. Otherwise, it will try
+     * to create new user account.
+     *
+     * @param ClientInterface $client
+     */
     public function authenticate(ClientInterface $client)
     {
         $account = $this->finder->findAccount()->byClient($client)->one();
 
         if (!$this->module->enableRegistration && ($account === null || $account->user === null)) {
-            Yii::$app->session->setFlash('danger', Yii::t('user', 'Registration on this website is disabled'));
+            \Yii::$app->session->setFlash('danger', \Yii::t('user', 'Registration on this website is disabled'));
             $this->action->successUrl = Url::to(['/user/security/login']);
             return;
         }
 
         if ($account === null) {
-            $accountObj = Yii::createObject(Account::className());
+            /** @var Account $account */
+            $accountObj = \Yii::createObject(Account::className());
             $account = $accountObj::create($client);
         }
 
@@ -189,12 +214,12 @@ class SecurityController extends \bin\admin\components\AppController
 
         if ($account->user instanceof User) {
             if ($account->user->isBlocked) {
-                Yii::$app->session->setFlash('danger', Yii::t('user', 'Your account has been blocked.'));
+                \Yii::$app->session->setFlash('danger', \Yii::t('user', 'Your account has been blocked.'));
                 $this->action->successUrl = Url::to(['/user/security/login']);
             } else {
                 $account->user->updateAttributes(['last_login_at' => time()]);
-                Yii::$app->user->login($account->user, $this->module->rememberFor);
-                $this->action->successUrl = Yii::$app->getUser()->getReturnUrl();
+                \Yii::$app->user->login($account->user, $this->module->rememberFor);
+                $this->action->successUrl = \Yii::$app->getUser()->getReturnUrl();
             }
         } else {
             $this->action->successUrl = $account->getConnectUrl();
@@ -203,9 +228,15 @@ class SecurityController extends \bin\admin\components\AppController
         $this->trigger(self::EVENT_AFTER_AUTHENTICATE, $event);
     }
 
+    /**
+     * Tries to connect social account to user.
+     *
+     * @param ClientInterface $client
+     */
     public function connect(ClientInterface $client)
     {
-        $account = Yii::createObject(Account::className());
+        /** @var Account $account */
+        $account = \Yii::createObject(Account::className());
         $event   = $this->getAuthEvent($account, $client);
 
         $this->trigger(self::EVENT_BEFORE_CONNECT, $event);

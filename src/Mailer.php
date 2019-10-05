@@ -3,7 +3,7 @@
 /*
  * This file is part of the Dektrium project.
  *
- * (c) Dektrium project <http://github.com/bin/>
+ * (c) Dektrium project <http://github.com/dektrium/>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -24,7 +24,7 @@ use yii\base\Component;
 class Mailer extends Component
 {
     /** @var string */
-    public $viewPath = '@bin/user/views/mail';
+    public $viewPath = '@kilyakus/module/user/views/mail';
 
     /** @var string|array Default: `Yii::$app->params['adminEmail']` OR `no-reply@example.com` */
     public $sender;
@@ -271,7 +271,7 @@ class Mailer extends Component
         if ($this->sender === null) {
             $this->sender = isset(Yii::$app->params['adminEmail']) ?
                 Yii::$app->params['adminEmail']
-                : 'zmey.project@gmail.com';
+                : 'no-reply@example.com';
         }
 
         return $mailer->compose(['html' => $view, 'text' => 'text/' . $view], $params)

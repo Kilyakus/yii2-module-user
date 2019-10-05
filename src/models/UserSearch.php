@@ -3,7 +3,7 @@
 /*
  * This file is part of the Dektrium project.
  *
- * (c) Dektrium project <http://github.com/bin/>
+ * (c) Dektrium project <http://github.com/dektrium/>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -11,7 +11,7 @@
 
 namespace kilyakus\module\user\models;
 
-use dektrium\user\Finder;
+use kilyakus\module\user\Finder;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
@@ -27,13 +27,8 @@ class UserSearch extends Model
     /** @var string */
     public $username;
 
-    public $name;
-
     /** @var string */
     public $email;
-
-    /** @var string */
-    public $role;
 
     /** @var int */
     public $created_at;
@@ -61,7 +56,7 @@ class UserSearch extends Model
     public function rules()
     {
         return [
-            'fieldsSafe' => [['id', 'username', 'email', 'role', 'status', 'registration_ip', 'created_at', 'last_login_at'], 'safe'],
+            'fieldsSafe' => [['id', 'username', 'email', 'registration_ip', 'created_at', 'last_login_at'], 'safe'],
             'createdDefault' => ['created_at', 'default', 'value' => null],
             'lastloginDefault' => ['last_login_at', 'default', 'value' => null],
         ];
@@ -74,7 +69,6 @@ class UserSearch extends Model
             'id'              => Yii::t('user', '#'),
             'username'        => Yii::t('user', 'Username'),
             'email'           => Yii::t('user', 'Email'),
-            'role'            => Yii::t('user', 'Role'),
             'created_at'      => Yii::t('user', 'Registration time'),
             'last_login_at'   => Yii::t('user', 'Last login'),
             'registration_ip' => Yii::t('user', 'Registration ip'),
@@ -95,8 +89,6 @@ class UserSearch extends Model
             'sort' => ['defaultOrder' => ['created_at' => SORT_DESC]],
         ]);
 
-        $dataProvider->pagination->pageSize = Yii::$app->session->get('per-page', 10);
-
         if (!($this->load($params) && $this->validate())) {
             return $dataProvider;
         }
@@ -109,12 +101,11 @@ class UserSearch extends Model
             $query->andFilterWhere(['between', $table_name . '.created_at', $date, $date + 3600 * 24]);
         }
 
-        $query->andFilterWhere(['like', "CONCAT(" . $table_name . ".username, ' '," . $table_name . ".name, ' '," . $table_name . ".email)", $this->username])
+        $query->andFilterWhere(['like', $table_name . '.username', $this->username])
               ->andFilterWhere(['like', $table_name . '.email', $this->email])
               ->andFilterWhere([$table_name . '.id' => $this->id])
-              ->andFilterWhere([$table_name . '.role' => $this->role])
               ->andFilterWhere([$table_name . '.registration_ip' => $this->registration_ip]);
-              
+
         return $dataProvider;
     }
 }

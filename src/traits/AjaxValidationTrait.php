@@ -3,7 +3,7 @@
 /*
  * This file is part of the Dektrium project
  *
- * (c) Dektrium project <http://github.com/bin>
+ * (c) Dektrium project <http://github.com/dektrium>
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.
@@ -31,17 +31,8 @@ trait AjaxValidationTrait
     {
         if (\Yii::$app->request->isAjax && $model->load(\Yii::$app->request->post())) {
             \Yii::$app->response->format = Response::FORMAT_JSON;
-            // \Yii::$app->response->data   = ActiveForm::validate($model);
-            // \Yii::$app->response->refresh()->send();
-            // \Yii::$app->end();
-        }
-    }
-
-    protected function sendAjaxValidation(Model $model)
-    {
-        if (\Yii::$app->request->isAjax && $model->load(\Yii::$app->request->post())) {
-            \Yii::$app->response->format = Response::FORMAT_JSON;
             \Yii::$app->response->data   = ActiveForm::validate($model);
+            \Yii::$app->response->send();
             \Yii::$app->end();
         }
     }

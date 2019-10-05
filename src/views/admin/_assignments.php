@@ -3,14 +3,13 @@
 /*
  * This file is part of the Dektrium project
  *
- * (c) Dektrium project <http://github.com/bin>
+ * (c) Dektrium project <http://github.com/dektrium>
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.
  */
 
-use bin\rbac\widgets\Assignments;
-use bin\rbac\widgets\ForumAssignments;
+use dektrium\rbac\widgets\Assignments;
 
 /**
  * @var yii\web\View $this
@@ -18,7 +17,7 @@ use bin\rbac\widgets\ForumAssignments;
  */
 ?>
 
-<?php $this->beginContent('@bin/user/views/admin/update.php', ['user' => $user]) ?>
+<?php $this->beginContent('@kilyakus/module/user/views/admin/update.php', ['user' => $user]) ?>
 
 <?= yii\bootstrap\Alert::widget([
     'options' => [
@@ -28,7 +27,5 @@ use bin\rbac\widgets\ForumAssignments;
 ]) ?>
 
 <?= Assignments::widget(['userId' => $user->id]) ?>
-
-<?= ForumAssignments::widget(['userId' => $user->id]) ?>
 
 <?php $this->endContent() ?>

@@ -3,7 +3,7 @@
 /*
  * This file is part of the Dektrium project.
  *
- * (c) Dektrium project <http://github.com/bin/>
+ * (c) Dektrium project <http://github.com/dektrium/>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -11,9 +11,8 @@
 
 namespace kilyakus\module\user\models;
 
-use Yii;
 use kilyakus\module\user\clients\ClientInterface;
-use dektrium\user\Finder;
+use kilyakus\module\user\Finder;
 use kilyakus\module\user\models\query\AccountQuery;
 use kilyakus\module\user\traits\ModuleTrait;
 use yii\authclient\ClientInterface as BaseClientInterface;
@@ -95,14 +94,6 @@ class Account extends ActiveRecord
 
     public function connect(User $user)
     {
-        Yii::$app->authManager->assign(Yii::$app->authManager->getPermission('users'), $user->id);
-
-        if(Yii::$app->getModule('forum')){
-            if(!Yii::$app->getModule('forum')->rbac->checkAccess($user->id, 'forumUser')){
-                Yii::$app->getModule('forum')->rbac->assign(Yii::$app->getModule('forum')->rbac->getRole('forumUser'), $user->id);
-            }
-        }
-            
         return $this->updateAttributes([
             'username' => null,
             'email'    => null,
@@ -137,7 +128,6 @@ class Account extends ActiveRecord
         }
 
         if (($user = static::fetchUser($account)) instanceof User) {
-
             $account->user_id = $user->id;
         }
 

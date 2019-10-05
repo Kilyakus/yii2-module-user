@@ -1,13 +1,21 @@
 <?php
+
+/*
+ * This file is part of the Dektrium project.
+ *
+ * (c) Dektrium project <http://github.com/dektrium/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace kilyakus\module\user\models;
 
-use Yii;
-use dektrium\user\Finder;
+use kilyakus\module\user\Finder;
 use kilyakus\module\user\helpers\Password;
 use kilyakus\module\user\Mailer;
 use kilyakus\module\user\Module;
 use kilyakus\module\user\traits\ModuleTrait;
-use kilyakus\module\user\models\Profile;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
@@ -15,6 +23,40 @@ use yii\web\Application as WebApplication;
 use yii\web\IdentityInterface;
 use yii\helpers\ArrayHelper;
 
+
+/**
+ * User ActiveRecord model.
+ *
+ * @property bool    $isAdmin
+ * @property bool    $isBlocked
+ * @property bool    $isConfirmed
+ *
+ * Database fields:
+ * @property integer $id
+ * @property string  $username
+ * @property string  $email
+ * @property string  $unconfirmed_email
+ * @property string  $password_hash
+ * @property string  $auth_key
+ * @property string  $registration_ip
+ * @property integer $confirmed_at
+ * @property integer $blocked_at
+ * @property integer $created_at
+ * @property integer $updated_at
+ * @property integer $last_login_at
+ * @property integer $flags
+ *
+ * Defined relations:
+ * @property Account[] $accounts
+ * @property Profile   $profile
+ *
+ * Dependencies:
+ * @property-read Finder $finder
+ * @property-read Module $module
+ * @property-read Mailer $mailer
+ *
+ * @author Dmitry Erofeev <dmeroff@gmail.com>
+ */
 class User extends ActiveRecord implements IdentityInterface
 {
     use ModuleTrait;
@@ -84,27 +126,12 @@ class User extends ActiveRecord implements IdentityInterface
             || in_array($this->username, $this->module->admins);
     }
 
+    /**
+     * @return \yii\db\ActiveQuery
+     */
     public function getProfile()
     {
         return $this->hasOne($this->module->modelMap['Profile'], ['user_id' => 'id']);
-    }
-
-    public function getAvatar($x = 200,$y = null)
-    {
-        if(!$profile = $this->hasOne($this->module->modelMap['Profile'], ['user_id' => 'id'])->one()){
-            $profile = new Profile;
-        }
-        return $profile->getAvatar($x,$y);
-    }
-
-    public function getAbbreviate()
-    {
-        return ($this->name ? trim($this->name) . ($this->username != trim($this->name) ? ' (' . $this->username . ')' : '') : $this->username);
-    }
-
-    public function getName()
-    {
-        return self::getAbbreviate(); // убрать потом
     }
 
     /**
@@ -144,16 +171,19 @@ class User extends ActiveRecord implements IdentityInterface
             : null;
     }
 
+    /** @inheritdoc */
     public function getId()
     {
         return $this->getAttribute('id');
     }
 
+    /** @inheritdoc */
     public function getAuthKey()
     {
         return $this->getAttribute('auth_key');
     }
 
+    /** @inheritdoc */
     public function attributeLabels()
     {
         return [
@@ -168,6 +198,7 @@ class User extends ActiveRecord implements IdentityInterface
         ];
     }
 
+    /** @inheritdoc */
     public function behaviors()
     {
         return [
@@ -175,18 +206,20 @@ class User extends ActiveRecord implements IdentityInterface
         ];
     }
 
+    /** @inheritdoc */
     public function scenarios()
     {
         $scenarios = parent::scenarios();
         return ArrayHelper::merge($scenarios, [
             'register' => ['username', 'email', 'password'],
-            'connect'  => ['username', 'email', 'password'], // can del password
+            'connect'  => ['username', 'email'],
             'create'   => ['username', 'email', 'password'],
             'update'   => ['username', 'email', 'password'],
             'settings' => ['username', 'email', 'password'],
         ]);
     }
 
+    /** @inheritdoc */
     public function rules()
     {
         return [
@@ -213,28 +246,12 @@ class User extends ActiveRecord implements IdentityInterface
             ],
 
             // password rules
-            'passwordRequired' => ['password', 'required', 'on' => ['register','connect']],
-            'passwordLength'   => ['password', 'string', 'min' => 6, 'max' => 72, 'on' => ['register', 'connect', 'create']],
-
-            'online' => ['online', 'integer'],
-            'online' => ['online', 'default', 'value' => 1]
+            'passwordRequired' => ['password', 'required', 'on' => ['register']],
+            'passwordLength'   => ['password', 'string', 'min' => 6, 'max' => 72, 'on' => ['register', 'create']],
         ];
     }
 
-    public function setOnline()
-    {
-        $this->online = strtotime(date('Y-m-d H:i:s', strtotime('+15 minutes')));
-        $this->save(false);
-    }
-
-    public function getOnline($showDescription = false)
-    {
-        if($this->findOne(Yii::$app->user->identity->id)->id == $this->id){
-            $this->setOnline();
-        }
-        return $this->online >= time() ? '<span class="kt-badge kt-badge--success kt-badge--dot online-label" data-toggle="tooltip" data-placement="top" data-html="true" data-original-title="'.Yii::t('easyii','Online').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Online') : '') : '<span class="kt-badge kt-badge--danger kt-badge--dot offline-label" data-toggle="tooltip" data-placement="top" data-html="true" data-original-title="'.Yii::t('easyii','Offline').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Offline') : '');
-    }
-
+    /** @inheritdoc */
     public function validateAuthKey($authKey)
     {
         return $this->getAttribute('auth_key') === $authKey;
@@ -502,6 +519,7 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->username;
     }
 
+    /** @inheritdoc */
     public function beforeSave($insert)
     {
         if ($insert) {
@@ -518,6 +536,7 @@ class User extends ActiveRecord implements IdentityInterface
         return parent::beforeSave($insert);
     }
 
+    /** @inheritdoc */
     public function afterSave($insert, $changedAttributes)
     {
         parent::afterSave($insert, $changedAttributes);
@@ -529,60 +548,21 @@ class User extends ActiveRecord implements IdentityInterface
         }
     }
 
-    public function beforeDelete()
-    {
-        parent::beforeDelete();
-
-        $auth = \Yii::$app->authManager;
-        $auth->revokeAll($this->id);
-    }
-
+    /** @inheritdoc */
     public static function tableName()
     {
         return '{{%user}}';
     }
 
+    /** @inheritdoc */
     public static function findIdentity($id)
     {
         return static::findOne($id);
     }
 
+    /** @inheritdoc */
     public static function findIdentityByAccessToken($token, $type = null)
     {
         throw new NotSupportedException('Method "' . __CLASS__ . '::' . __METHOD__ . '" is not implemented.');
-    }
-
-    public static function findByUsername($username)
-    {
-        if ($username === static::findOne(['username' => 'Developer'])) {
-            return static::createRootUser();
-        }
-        return static::findOne(['username' => $username]);
-    }
-
-    public static function findByEmail($email)
-    {
-        return static::findOne(['email' => $email]);
-    }
-
-    public static function findMe()
-    {
-        return static::findOne(\Yii::$app->user->identity->id);
-    }
-
-    public function validatePassword($password)
-    {
-        return $this->password === $this->hashPassword($password);
-    }
-
-    private function hashPassword($password)
-    {
-        return sha1($password . $this->getAuthKey() . Setting::get('password_salt'));
-    }
-
-    public function isRoot()
-    {
-        // var_dump($this->module->adminPermission);die;
-        return Yii::$app->user->can('developer');
     }
 }

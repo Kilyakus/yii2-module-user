@@ -3,7 +3,7 @@
 /*
  * This file is part of the Dektrium project.
  *
- * (c) Dektrium project <http://github.com/bin/>
+ * (c) Dektrium project <http://github.com/dektrium/>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -11,7 +11,7 @@
 
 namespace kilyakus\module\user\models;
 
-use dektrium\user\Finder;
+use kilyakus\module\user\Finder;
 use kilyakus\module\user\Mailer;
 use yii\base\Model;
 
@@ -124,7 +124,7 @@ class RecoveryForm extends Model
         }
 
         \Yii::$app->session->setFlash(
-            'success',
+            'info',
             \Yii::t('user', 'An email has been sent with instructions for resetting your password')
         );
 

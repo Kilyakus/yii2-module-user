@@ -3,7 +3,7 @@
 /*
  * This file is part of the Dektrium project.
  *
- * (c) Dektrium project <http://github.com/bin/>
+ * (c) Dektrium project <http://github.com/dektrium/>
  *
  * For the full copyright and license information, please view the LICENSE.md
  * file that was distributed with this source code.
@@ -11,7 +11,7 @@
 
 namespace kilyakus\module\user\commands;
 
-use dektrium\user\Finder;
+use kilyakus\module\user\Finder;
 use Yii;
 use yii\console\Controller;
 use yii\helpers\Console;

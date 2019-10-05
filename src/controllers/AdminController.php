@@ -1,8 +1,18 @@
 <?php
+
+/*
+ * This file is part of the Dektrium project.
+ *
+ * (c) Dektrium project <http://github.com/dektrium/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace kilyakus\module\user\controllers;
 
 use kilyakus\module\user\filters\AccessRule;
-use dektrium\user\Finder;
+use kilyakus\module\user\Finder;
 use kilyakus\module\user\models\Profile;
 use kilyakus\module\user\models\User;
 use kilyakus\module\user\models\UserSearch;
@@ -22,36 +32,136 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\widgets\ActiveForm;
 
-class AdminController extends \bin\admin\components\Controller
+/**
+ * AdminController allows you to administrate users.
+ *
+ * @property Module $module
+ *
+ * @author Dmitry Erofeev <dmeroff@gmail.com
+ */
+class AdminController extends Controller
 {
     use EventTrait;
 
+    /**
+     * Event is triggered before creating new user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_CREATE = 'beforeCreate';
+
+    /**
+     * Event is triggered after creating new user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_CREATE = 'afterCreate';
+
+    /**
+     * Event is triggered before updating existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_UPDATE = 'beforeUpdate';
+
+    /**
+     * Event is triggered after updating existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_UPDATE = 'afterUpdate';
+
+    /**
+     * Event is triggered before impersonating as another user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_IMPERSONATE = 'beforeImpersonate';
+
+    /**
+     * Event is triggered after impersonating as another user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_IMPERSONATE = 'afterImpersonate';
+
+    /**
+     * Event is triggered before updating existing user's profile.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_PROFILE_UPDATE = 'beforeProfileUpdate';
+
+    /**
+     * Event is triggered after updating existing user's profile.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_PROFILE_UPDATE = 'afterProfileUpdate';
+
+    /**
+     * Event is triggered before confirming existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_CONFIRM = 'beforeConfirm';
+
+    /**
+     * Event is triggered after confirming existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_CONFIRM = 'afterConfirm';
+
+    /**
+     * Event is triggered before deleting existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
+
+    /**
+     * Event is triggered after deleting existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_DELETE = 'afterDelete';
+
+    /**
+     * Event is triggered before blocking existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_BLOCK = 'beforeBlock';
+
+    /**
+     * Event is triggered after blocking existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_BLOCK = 'afterBlock';
+
+    /**
+     * Event is triggered before unblocking existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_BEFORE_UNBLOCK = 'beforeUnblock';
+
+    /**
+     * Event is triggered after unblocking existing user.
+     * Triggered with \kilyakus\module\user\events\UserEvent.
+     */
     const EVENT_AFTER_UNBLOCK = 'afterUnblock';
+
+    /**
+     * Name of the session key in which the original user id is saved
+     * when using the impersonate user function.
+     * Used inside actionSwitch().
+     */
     const ORIGINAL_USER_SESSION_KEY = 'original_user';
 
+    /** @var Finder */
     protected $finder;
 
+    /**
+     * @param string  $id
+     * @param Module2 $module
+     * @param Finder  $finder
+     * @param array   $config
+     */
     public function __construct($id, $module, Finder $finder, $config = [])
     {
         $this->finder = $finder;
         parent::__construct($id, $module, $config);
     }
 
+    /** @inheritdoc */
     public function behaviors()
     {
         return [
@@ -78,13 +188,18 @@ class AdminController extends \bin\admin\components\Controller
                     ],
                     [
                         'allow' => true,
-                        'roles' => ['developer','administrators','moderators'],
+                        'roles' => ['admin'],
                     ],
                 ],
             ],
         ];
     }
 
+    /**
+     * Lists all User models.
+     *
+     * @return mixed
+     */
     public function actionIndex()
     {
         Url::remember('', 'actions-redirect');
@@ -97,8 +212,15 @@ class AdminController extends \bin\admin\components\Controller
         ]);
     }
 
+    /**
+     * Creates a new User model.
+     * If creation is successful, the browser will be redirected to the 'index' page.
+     *
+     * @return mixed
+     */
     public function actionCreate()
     {
+        /** @var User $user */
         $user = \Yii::createObject([
             'class'    => User::className(),
             'scenario' => 'create',
@@ -119,6 +241,13 @@ class AdminController extends \bin\admin\components\Controller
         ]);
     }
 
+    /**
+     * Updates an existing User model.
+     *
+     * @param int $id
+     *
+     * @return mixed
+     */
     public function actionUpdate($id)
     {
         Url::remember('', 'actions-redirect');
@@ -140,6 +269,13 @@ class AdminController extends \bin\admin\components\Controller
         ]);
     }
 
+    /**
+     * Updates an existing profile.
+     *
+     * @param int $id
+     *
+     * @return mixed
+     */
     public function actionUpdateProfile($id)
     {
         Url::remember('', 'actions-redirect');
@@ -150,24 +286,6 @@ class AdminController extends \bin\admin\components\Controller
             $profile = \Yii::createObject(Profile::className());
             $profile->link('user', $user);
         }
-
-        $post = \Yii::$app->request->post('Profile');
-
-        $request = \Yii::$app->request;
-        if($request->post('MapsCountry')){
-            $location['country_id'] = $request->post('MapsCountry')['name_ru'];
-            if($request->post('MapsRegion')){
-                $location['region_id'] = $request->post('MapsRegion')['name_ru'];
-                if($request->post('MapsCity')){
-                    $location['city_id'] = $request->post('MapsCity')['name_ru'];
-                }
-            }
-        }
-        if(is_array($location)){
-            $profile->location = json_encode($location);
-            $profile->save();
-        }
-
         $event = $this->getProfileEvent($profile);
 
         $this->performAjaxValidation($profile);
@@ -186,6 +304,13 @@ class AdminController extends \bin\admin\components\Controller
         ]);
     }
 
+    /**
+     * Shows information about user.
+     *
+     * @param int $id
+     *
+     * @return string
+     */
     public function actionInfo($id)
     {
         Url::remember('', 'actions-redirect');
@@ -196,6 +321,15 @@ class AdminController extends \bin\admin\components\Controller
         ]);
     }
 
+    /**
+     * Switches to the given user for the rest of the Session.
+     * When no id is given, we switch back to the original admin user
+     * that started the impersonation.
+     *
+     * @param int $id
+     *
+     * @return string
+     */
     public function actionSwitch($id = null)
     {
         if (!$this->module->enableImpersonateUser) {
@@ -226,6 +360,15 @@ class AdminController extends \bin\admin\components\Controller
         return $this->goHome();
     }
 
+    /**
+     * If "dektrium/yii2-rbac" extension is installed, this page displays form
+     * where user can assign multiple auth items to user.
+     *
+     * @param int $id
+     *
+     * @return string
+     * @throws NotFoundHttpException
+     */
     public function actionAssignments($id)
     {
         if (!isset(\Yii::$app->extensions['dektrium/yii2-rbac'])) {
@@ -239,6 +382,13 @@ class AdminController extends \bin\admin\components\Controller
         ]);
     }
 
+    /**
+     * Confirms the User.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
     public function actionConfirm($id)
     {
         $model = $this->findModel($id);
@@ -253,6 +403,14 @@ class AdminController extends \bin\admin\components\Controller
         return $this->redirect(Url::previous('actions-redirect'));
     }
 
+    /**
+     * Deletes an existing User model.
+     * If deletion is successful, the browser will be redirected to the 'index' page.
+     *
+     * @param int $id
+     *
+     * @return mixed
+     */
     public function actionDelete($id)
     {
         if ($id == \Yii::$app->user->getId()) {
@@ -261,8 +419,7 @@ class AdminController extends \bin\admin\components\Controller
             $model = $this->findModel($id);
             $event = $this->getUserEvent($model);
             $this->trigger(self::EVENT_BEFORE_DELETE, $event);
-            // $model->delete();
-            User::deleteAll(['id' => $id]);
+            $model->delete();
             $this->trigger(self::EVENT_AFTER_DELETE, $event);
             \Yii::$app->getSession()->setFlash('success', \Yii::t('user', 'User has been deleted'));
         }
@@ -270,6 +427,13 @@ class AdminController extends \bin\admin\components\Controller
         return $this->redirect(['index']);
     }
 
+    /**
+     * Blocks the user.
+     *
+     * @param int $id
+     *
+     * @return Response
+     */
     public function actionBlock($id)
     {
         if ($id == \Yii::$app->user->getId()) {
@@ -293,6 +457,11 @@ class AdminController extends \bin\admin\components\Controller
         return $this->redirect(Url::previous('actions-redirect'));
     }
 
+    /**
+     * Generates a new password and sends it to the user.
+     *
+     * @return Response
+     */
     public function actionResendPassword($id)
     {
         $user = $this->findModel($id);
@@ -309,6 +478,15 @@ class AdminController extends \bin\admin\components\Controller
         return $this->redirect(Url::previous('actions-redirect'));
     }
 
+    /**
+     * Finds the User model based on its primary key value.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     *
+     * @param int $id
+     *
+     * @return User the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
     protected function findModel($id)
     {
         $user = $this->finder->findUserById($id);
@@ -319,6 +497,13 @@ class AdminController extends \bin\admin\components\Controller
         return $user;
     }
 
+    /**
+     * Performs AJAX validation.
+     *
+     * @param array|Model $model
+     *
+     * @throws ExitException
+     */
     protected function performAjaxValidation($model)
     {
         if (\Yii::$app->request->isAjax && !\Yii::$app->request->isPjax) {

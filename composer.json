@@ -2,19 +2,46 @@
     "name": "kilyakus/yii2-module-user",
     "type": "yii2-extension",
     "license": "MIT",
+    "support": {
+        "issues": "https://github.com/dektrium/yii2-user/issues?state=open",
+        "forum": "https://gitter.im/dektrium/yii2-user",
+        "source": "https://github.com/dektrium/yii2-user"
+    },
     "authors": [
         {
-            "name": "Kilyakus",
+            "name": "Dmitry Erofeev",
+            "email": "dmeroff@gmail.com",
+            "homepage": "http://dmeroff.ru"
+        },
+        {
+            "name": "Edited: Kilyakus",
             "email": "aleksandr.kilyakov@gmail.com"
         }
     ],
+    "minimum-stability": "dev",
     "require": {
-        "yiisoft/yii2": ">=2.0.0",
+        "php": ">=5.4.0",
+        "yiisoft/yii2": "^2.0.13",
+        "yiisoft/yii2-swiftmailer": "^2.0.0",
+        "yiisoft/yii2-authclient": "^2.1.0",
+        "yiisoft/yii2-bootstrap": "^2.0.0",
         "kilyakus/yii2-widget-maps": "*"
+    },
+    "require-dev": {
+        "yiisoft/yii2-codeception": "^2.0.0",
+        "codeception/specify": "^0.4.3",
+        "codeception/verify": "^0.3.1"
     },
     "autoload": {
         "psr-4": {
-            "kilyakus\\module\\user\\": "src"
+            "kilyakus\\module\\user\\": ""
+        }
+    },
+    "extra": {
+        "bootstrap": "dektrium\\user\\Bootstrap",
+        "branch-alias": {
+            "dev-master": "0.9.x-dev",
+            "dev-develop": "1.0.x-dev"
         }
     }
 }
