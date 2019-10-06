@@ -82,13 +82,21 @@ class RegistrationForm extends Model
             return false;
         }
 
-        Yii::$app->session->setFlash(
-            'info',
-            Yii::t(
-                'user',
-                'Your account has been created and a message with further instructions has been sent to your email'
-            )
-        );
+        if($this->module->enableConfirmation){
+
+            Yii::$app->session->setFlash(
+                'success',
+                Yii::t(
+                    'user',
+                    'Your account has been created and a message with further instructions has been sent to your email'
+                )
+            );
+            
+        }else{
+            Yii::$app->user->login($user);
+
+            Yii::$app->session->setFlash('success',Yii::t('user','Your account has been created'));
+        }
 
         return true;
     }
