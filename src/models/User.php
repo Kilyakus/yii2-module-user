@@ -1,6 +1,7 @@
 <?php
 namespace kilyakus\module\user\models;
 
+use Yii;
 use kilyakus\module\user\Finder;
 use kilyakus\module\user\helpers\Password;
 use kilyakus\module\user\Mailer;
@@ -66,17 +67,24 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->hasOne($this->module->modelMap['Profile'], ['user_id' => 'id']);
     }
 
-    /**
-     * @param Profile $profile
-     */
     public function setProfile(Profile $profile)
     {
         $this->_profile = $profile;
     }
 
-    /**
-     * @return Account[] Connected accounts ($provider => $account)
-     */
+    public function getAvatar($x = 200,$y = null)
+    {
+        if(!$profile = $this->hasOne($this->module->modelMap['Profile'], ['user_id' => 'id'])->one()){
+            $profile = new Profile;
+        }
+        return $profile->getAvatar($x,$y);
+    }
+
+    public function getAbbreviate()
+    {
+        return ($this->name ? trim($this->name) . ($this->username != trim($this->name) ? ' (' . $this->username . ')' : '') : $this->username);
+    }
+
     public function getAccounts()
     {
         $connected = [];
@@ -134,7 +142,7 @@ class User extends ActiveRecord implements IdentityInterface
         $scenarios = parent::scenarios();
         return ArrayHelper::merge($scenarios, [
             'register' => ['username', 'email', 'password'],
-            'connect'  => ['username', 'email'],
+            'connect'  => ['username', 'email', 'password'], // can del password
             'create'   => ['username', 'email', 'password'],
             'update'   => ['username', 'email', 'password'],
             'settings' => ['username', 'email', 'password'],
@@ -164,9 +172,26 @@ class User extends ActiveRecord implements IdentityInterface
                 'message' => \Yii::t('user', 'This email address has already been taken')
             ],
 
-            'passwordRequired' => ['password', 'required', 'on' => ['register']],
-            'passwordLength'   => ['password', 'string', 'min' => 6, 'max' => 72, 'on' => ['register', 'create']],
+            'passwordRequired' => ['password', 'required', 'on' => ['register','connect']],
+            'passwordLength'   => ['password', 'string', 'min' => 6, 'max' => 72, 'on' => ['register', 'connect', 'create']],
+
+            'online' => ['online', 'integer'],
+            'online' => ['online', 'default', 'value' => 1]
         ];
+    }
+
+    public function setOnline()
+    {
+        $this->online = strtotime(date('Y-m-d H:i:s', strtotime('+15 minutes')));
+        $this->save(false);
+    }
+
+    public function getOnline($showDescription = false)
+    {
+        if($this->id == Yii::$app->user->id){
+            $this->setOnline();
+        }
+        return $this->online >= time() ? '<span class="kt-badge kt-badge--success kt-badge--dot" data-toggle="kt-tooltip" data-placement="top" data-skin="dark" data-html="true" data-original-title="'.Yii::t('user','Online').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Online') : '') : '<span class="kt-badge kt-badge--danger kt-badge--dot" data-toggle="kt-tooltip" data-placement="top" data-skin="dark" data-html="true" data-original-title="'.Yii::t('user','Offline').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Offline') : '');
     }
 
     public function validateAuthKey($authKey)
@@ -397,6 +422,14 @@ class User extends ActiveRecord implements IdentityInterface
             }
             $this->_profile->link('user', $this);
         }
+    }
+
+    public function beforeDelete()
+    {
+        parent::beforeDelete();
+
+        $auth = \Yii::$app->authManager;
+        $auth->revokeAll($this->id);
     }
 
     public static function tableName()
