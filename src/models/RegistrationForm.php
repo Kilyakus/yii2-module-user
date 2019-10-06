@@ -1,9 +1,9 @@
 <?php
 namespace kilyakus\module\user\models;
 
-use kilyakus\module\user\traits\ModuleTrait;
 use Yii;
 use yii\base\Model;
+use kilyakus\module\user\traits\ModuleTrait;
 
 class RegistrationForm extends Model
 {
@@ -12,6 +12,8 @@ class RegistrationForm extends Model
     public $email;
     public $username;
     public $password;
+    public $role;
+    public $agreement;
 
     public function rules()
     {
@@ -41,15 +43,23 @@ class RegistrationForm extends Model
 
             'passwordRequired' => ['password', 'required', 'skipOnEmpty' => $this->module->enableGeneratingPassword],
             'passwordLength'   => ['password', 'string', 'min' => 6, 'max' => 72],
+
+            'roleRequired' => ['role', 'required'],
+            'roleLength'   => ['role', 'string'],
+
+            'agreementRequired' => ['agreement', 'required','message' => Yii::t('user', 'Необходимо дать согласие на обработку персональных данных!')],
+            'agreementLength'   => ['agreement', 'string'],
         ];
     }
 
     public function attributeLabels()
     {
         return [
-            'email'    => Yii::t('user', 'Email'),
-            'username' => Yii::t('user', 'Username'),
-            'password' => Yii::t('user', 'Password'),
+            'email'     => Yii::t('user', 'Email'),
+            'username'  => Yii::t('user', 'Username'),
+            'password'  => Yii::t('user', 'Password'),
+            'role'      => Yii::t('user', 'Roles'),
+            'agreement' => Yii::t('user', 'Terms of use'),
         ];
     }
 
@@ -64,8 +74,7 @@ class RegistrationForm extends Model
             return false;
         }
 
-        /** @var User $user */
-        $user = Yii::createObject(User::className());
+        $user = new $this->module->modelMap['User'];
         $user->setScenario('register');
         $this->loadAttributes($user);
 
