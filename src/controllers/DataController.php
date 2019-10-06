@@ -1,6 +1,7 @@
 <?php
 namespace kilyakus\module\user\controllers;
 
+use Yii;
 use yii\db\Query;
 use yii\web\Controller;
 use yii\filters\AccessControl;
@@ -55,9 +56,18 @@ class DataController extends Controller
 
                 if($user){
 
-                    $avatar = Html::img($user->avatar,['width' => 25, 'height' => 25, 'class' => 'img-circle']);
+                    $avatar = Html::img($user->avatar,['width' => 40, 'height' => 40, 'class' => 'img-circle']);
 
-                    $out['results'][$key]['text'] = $avatar . '&nbsp; ' . $user->abbreviate;
+                    $html = '<div class="kt-user-card-v2">
+                                <div class="kt-user-card-v2__pic">'.$avatar.'</div>
+                                <div class="kt-user-card-v2__details">
+                                    <span class="kt-user-card-v2__name">'.$user->abbreviate.'</span>
+                                    <span class="kt-user-card-v2__desc">'.array_values(Yii::$app->authManager->getPermissionsByUser($user->id))[0]->description.'</span>
+                                </div>
+                            </div>';
+
+                    $out['results'][$key]['text'] = $html;
+
 
                 }
 
