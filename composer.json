@@ -42,7 +42,7 @@
     "extra": {
         "bootstrap": "kilyakus\\module\\user\\Bootstrap",
         "branch-alias": {
-            "dev-master": "1.0.0-dev"
+            "dev-master": "1.0.x-dev"
         }
     }
 }
