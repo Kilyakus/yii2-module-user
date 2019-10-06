@@ -43,7 +43,7 @@ class DataController extends Controller
 
             $query = $query->select('id, username, name AS text')->from('user');
 
-            $query->where(['or',['like', 'username', $q], ['like', 'name', $q]]);
+            $query->where(['or',['like', 'id', $q], ['like', 'username', $q], ['like', 'name', $q]]);
 
             $query = $query->createCommand()->queryAll();
 
