@@ -37,7 +37,7 @@ class Profile extends ActiveRecord
         if(empty($this->avatar) && $this->gravatar_id && is_file($gravatar)){
             $avatar = $gravatar;
         }else{
-            $avatar = Avatar::get($this->avatar,$this->user->name ? $this->user->name : $this->user->username);
+            $avatar = Avatar::get($this->avatar,$this->name ? $this->user->name : $this->user->username);
         }
         return $avatar;
     }
