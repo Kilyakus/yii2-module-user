@@ -72,7 +72,7 @@ class User extends ActiveRecord implements IdentityInterface
         $this->_profile = $profile;
     }
 
-    public function getAvatar($x = 200,$y = null)
+    public function getAvatar($x = 300,$y = null)
     {
         if(!$profile = $this->hasOne($this->module->modelMap['Profile'], ['user_id' => 'id'])->one()){
             $profile = new Profile;
@@ -107,6 +107,9 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function getId()
     {
+        if($this->id == Yii::$app->user->id){
+            $this->setOnline();
+        }
         return $this->getAttribute('id');
     }
 
@@ -188,9 +191,6 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function getOnline($showDescription = false)
     {
-        if($this->id == Yii::$app->user->id){
-            $this->setOnline();
-        }
         return $this->online >= time() ? '<span class="kt-badge kt-badge--success kt-badge--dot" data-toggle="kt-tooltip" data-placement="top" data-skin="dark" data-html="true" data-original-title="'.Yii::t('user','Online').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Online') : '') : '<span class="kt-badge kt-badge--danger kt-badge--dot" data-toggle="kt-tooltip" data-placement="top" data-skin="dark" data-html="true" data-original-title="'.Yii::t('user','Offline').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Offline') : '');
     }
 
