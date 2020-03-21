@@ -2,17 +2,20 @@
 namespace kilyakus\module\user\models;
 
 use Yii;
-use kilyakus\module\user\Finder;
-use kilyakus\module\user\helpers\Password;
-use kilyakus\module\user\Mailer;
-use kilyakus\module\user\UserModule;
-use kilyakus\module\user\traits\ModuleTrait;
-use yii\base\NotSupportedException;
-use yii\behaviors\TimestampBehavior;
+
 use yii\db\ActiveRecord;
 use yii\web\Application as WebApplication;
 use yii\web\IdentityInterface;
+use yii\base\NotSupportedException;
+use yii\helpers\Html;
 use yii\helpers\ArrayHelper;
+use yii\behaviors\TimestampBehavior;
+
+use kilyakus\module\user\Finder;
+use kilyakus\module\user\Mailer;
+use kilyakus\module\user\UserModule;
+use kilyakus\module\user\traits\ModuleTrait;
+use kilyakus\module\user\helpers\Password;
 
 class User extends ActiveRecord implements IdentityInterface
 {
@@ -191,7 +194,9 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function getOnline($showDescription = false)
     {
-        return $this->online >= time() ? '<span class="kt-badge kt-badge--success kt-badge--dot" data-toggle="kt-tooltip" data-placement="top" data-skin="dark" data-html="true" data-original-title="'.Yii::t('user','Online').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Online') : '') : '<span class="kt-badge kt-badge--danger kt-badge--dot" data-toggle="kt-tooltip" data-placement="top" data-skin="dark" data-html="true" data-original-title="'.Yii::t('user','Offline').'"></span>'.($showDescription ? ' ' . Yii::t('easyii','Offline') : '');
+        $isOnline = ($this->online >= time());
+
+        return Html::tag('span', null, ['class' => 'kt-badge kt-badge--' . ($isOnline ? 'success' : 'danger') . ' kt-badge--dot', 'data-toggle' => 'kt-tooltip', 'data-placement' => 'top', 'data-skin' => 'dark', 'data-html' => 'true', 'data-original-title' => Yii::t('user',($isOnline ? 'Online' : 'Offline'))]) . ($showDescription ? ' ' . Yii::t('easyii',($isOnline ? 'Online' : 'Offline')) : '');
     }
 
     public function validateAuthKey($authKey)
@@ -408,6 +413,10 @@ class User extends ActiveRecord implements IdentityInterface
 
         if (!empty($this->password)) {
             $this->setAttribute('password_hash', Password::hash($this->password));
+        }
+
+        if (empty(trim($this->name))) {
+            $this->setAttribute('name', $this->username);
         }
 
         return parent::beforeSave($insert);
