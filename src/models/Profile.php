@@ -4,8 +4,8 @@ namespace kilyakus\module\user\models;
 use Yii;
 use yii\db\ActiveRecord;
 use kilyakus\module\user\traits\ModuleTrait;
-use kilyakus\imageprocessor\Avatar;
-use kilyakus\imageprocessor\Image;
+use kilyakus\helper\media\Avatar;
+use kilyakus\helper\media\Image;
 use kilyakus\cutter\behaviors\CutterBehavior;
 
 

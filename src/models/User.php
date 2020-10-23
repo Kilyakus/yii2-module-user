@@ -416,7 +416,7 @@ class User extends ActiveRecord implements IdentityInterface
         }
 
         if (empty(trim($this->name))) {
-            $this->setAttribute('name', $this->username);
+            $this->setAttribute('name', trim($this->username));
         }
 
         return parent::beforeSave($insert);
